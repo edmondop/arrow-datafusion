@@ -71,6 +71,7 @@ impl<'a, S: ContextProvider> SqlToRel<'a, S> {
 
         // process `from` clause
         let plan = self.plan_from_tables(select.from, planner_context)?;
+        
         let empty_from = matches!(plan, LogicalPlan::EmptyRelation(_));
 
         // process `where` clause
@@ -377,6 +378,7 @@ impl<'a, S: ContextProvider> SqlToRel<'a, S> {
         mut from: Vec<TableWithJoins>,
         planner_context: &mut PlannerContext,
     ) -> Result<LogicalPlan> {
+        println!("from len {}", from.len());
         match from.len() {
             0 => Ok(LogicalPlanBuilder::empty(true).build()?),
             1 => {

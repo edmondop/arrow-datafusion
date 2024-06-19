@@ -1268,7 +1268,7 @@ mod tests {
     #[test]
     fn test_group_window_expr_by_sort_keys_empty_window() -> Result<()> {
         let max1 = Expr::WindowFunction(expr::WindowFunction::new(
-            WindowFunctionDefinition::AggregateFunction(AggregateFunction::Max),
+            WindowFunctionDefinition::AggregateUDF(max_udaf()),
             vec![col("name")],
             vec![],
             vec![],
@@ -1276,7 +1276,7 @@ mod tests {
             None,
         ));
         let max2 = Expr::WindowFunction(expr::WindowFunction::new(
-            WindowFunctionDefinition::AggregateFunction(AggregateFunction::Max),
+            WindowFunctionDefinition::AggregateUDF(max_udaf()),
             vec![col("name")],
             vec![],
             vec![],
@@ -1284,7 +1284,7 @@ mod tests {
             None,
         ));
         let min3 = Expr::WindowFunction(expr::WindowFunction::new(
-            WindowFunctionDefinition::AggregateFunction(AggregateFunction::Min),
+            WindowFunctionDefinition::AggregateUDF(min_udaf()),
             vec![col("name")],
             vec![],
             vec![],
@@ -1371,7 +1371,7 @@ mod tests {
     fn test_find_sort_exprs() -> Result<()> {
         let exprs = &[
             Expr::WindowFunction(expr::WindowFunction::new(
-                WindowFunctionDefinition::AggregateFunction(AggregateFunction::Max),
+                WindowFunctionDefinition::AggregateUDF(max_udaf()),
                 vec![col("name")],
                 vec![],
                 vec![

@@ -28,7 +28,6 @@ use datafusion_common::{
 use datafusion_expr::builder::project;
 use datafusion_expr::expr::AggregateFunctionDefinition;
 use datafusion_expr::{
-    aggregate_function::AggregateFunction::{Max, Min},
     col,
     expr::AggregateFunction,
     logical_plan::{Aggregate, LogicalPlan},
@@ -71,7 +70,7 @@ fn is_single_distinct_agg(aggr_expr: &[Expr]) -> Result<bool> {
     let mut aggregate_count = 0;
     for expr in aggr_expr {
         if let Expr::AggregateFunction(AggregateFunction {
-            func_def: AggregateFunctionDefinition::BuiltIn(fun),
+            func_def: AggregateFunctionDefinition::BuiltIn(_fun),
             distinct,
             args,
             filter,
@@ -87,7 +86,7 @@ fn is_single_distinct_agg(aggr_expr: &[Expr]) -> Result<bool> {
                 for e in args {
                     fields_set.insert(e);
                 }
-            } else if !matches!(fun, Min | Max) {
+            } else {
                 return Ok(false);
             }
         } else if let Expr::AggregateFunction(AggregateFunction {

@@ -54,7 +54,7 @@ use datafusion_expr::expr::{
 };
 use datafusion_expr::logical_plan::{Extension, UserDefinedLogicalNodeCore};
 use datafusion_expr::{
-    Accumulator, AggregateExt, AggregateFunction, ColumnarValue, ExprSchemable,
+    Accumulator, AggregateExt,  ColumnarValue, ExprSchemable,
     LogicalPlan, Operator, PartitionEvaluator, ScalarUDF, ScalarUDFImpl, Signature,
     TryCast, Volatility, WindowFrame, WindowFrameBound, WindowFrameUnits,
     WindowFunctionDefinition, WindowUDF, WindowUDFImpl,
@@ -2026,14 +2026,6 @@ fn roundtrip_window() {
         WindowFrameBound::Following(ScalarValue::UInt64(Some(2))),
     );
 
-    let test_expr4 = Expr::WindowFunction(expr::WindowFunction::new(
-        WindowFunctionDefinition::AggregateFunction(AggregateFunction::Max),
-        vec![col("col1")],
-        vec![col("col1")],
-        vec![col("col2")],
-        row_number_frame.clone(),
-        None,
-    ));
 
     // 5. test with AggregateUDF
     #[derive(Debug)]
@@ -2168,7 +2160,6 @@ fn roundtrip_window() {
     roundtrip_expr_test(test_expr1, ctx.clone());
     roundtrip_expr_test(test_expr2, ctx.clone());
     roundtrip_expr_test(test_expr3, ctx.clone());
-    roundtrip_expr_test(test_expr4, ctx.clone());
     roundtrip_expr_test(test_expr5, ctx.clone());
     roundtrip_expr_test(test_expr6, ctx);
 }

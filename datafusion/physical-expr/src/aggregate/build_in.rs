@@ -107,17 +107,7 @@ pub fn create_aggregate_expr(
                 data_type,
                 is_expr_nullable,
             ))
-        }
-        (AggregateFunction::Min, _) => Arc::new(expressions::Min::new(
-            input_phy_exprs[0].clone(),
-            name,
-            data_type,
-        )),
-        (AggregateFunction::Max, _) => Arc::new(expressions::Max::new(
-            input_phy_exprs[0].clone(),
-            name,
-            data_type,
-        )),
+        },
         (AggregateFunction::Avg, false) => {
             Arc::new(Avg::new(input_phy_exprs[0].clone(), name, data_type))
         }
@@ -232,54 +222,6 @@ mod tests {
         Ok(())
     }
 
-    #[test]
-    fn test_min_max_expr() -> Result<()> {
-        let funcs = vec![AggregateFunction::Min, AggregateFunction::Max];
-        let data_types = vec![
-            DataType::UInt32,
-            DataType::Int32,
-            DataType::Float32,
-            DataType::Float64,
-            DataType::Decimal128(10, 2),
-            DataType::Utf8,
-        ];
-        for fun in funcs {
-            for data_type in &data_types {
-                let input_schema =
-                    Schema::new(vec![Field::new("c1", data_type.clone(), true)]);
-                let input_phy_exprs: Vec<Arc<dyn PhysicalExpr>> = vec![Arc::new(
-                    expressions::Column::new_with_schema("c1", &input_schema).unwrap(),
-                )];
-                let result_agg_phy_exprs = create_physical_agg_expr_for_test(
-                    &fun,
-                    false,
-                    &input_phy_exprs[0..1],
-                    &input_schema,
-                    "c1",
-                )?;
-                match fun {
-                    AggregateFunction::Min => {
-                        assert!(result_agg_phy_exprs.as_any().is::<Min>());
-                        assert_eq!("c1", result_agg_phy_exprs.name());
-                        assert_eq!(
-                            Field::new("c1", data_type.clone(), true),
-                            result_agg_phy_exprs.field().unwrap()
-                        );
-                    }
-                    AggregateFunction::Max => {
-                        assert!(result_agg_phy_exprs.as_any().is::<Max>());
-                        assert_eq!("c1", result_agg_phy_exprs.name());
-                        assert_eq!(
-                            Field::new("c1", data_type.clone(), true),
-                            result_agg_phy_exprs.field().unwrap()
-                        );
-                    }
-                    _ => {}
-                };
-            }
-        }
-        Ok(())
-    }
 
     #[test]
     fn test_bool_and_or_expr() -> Result<()> {

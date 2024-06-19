@@ -33,10 +33,6 @@ use strum_macros::EnumIter;
 // https://datafusion.apache.org/contributor-guide/index.html#how-to-add-a-new-aggregate-function
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Hash, EnumIter)]
 pub enum AggregateFunction {
-    /// Minimum
-    Min,
-    /// Maximum
-    Max,
     /// Average
     Avg,
     /// Aggregation into an array
@@ -57,8 +53,6 @@ impl AggregateFunction {
     pub fn name(&self) -> &str {
         use AggregateFunction::*;
         match self {
-            Min => "MIN",
-            Max => "MAX",
             Avg => "AVG",
             ArrayAgg => "ARRAY_AGG",
             NthValue => "NTH_VALUE",
@@ -84,9 +78,7 @@ impl FromStr for AggregateFunction {
             "avg" => AggregateFunction::Avg,
             "bool_and" => AggregateFunction::BoolAnd,
             "bool_or" => AggregateFunction::BoolOr,
-            "max" => AggregateFunction::Max,
             "mean" => AggregateFunction::Avg,
-            "min" => AggregateFunction::Min,
             "array_agg" => AggregateFunction::ArrayAgg,
             "nth_value" => AggregateFunction::NthValue,
             // statistical
@@ -123,11 +115,6 @@ impl AggregateFunction {
             })?;
 
         match self {
-            AggregateFunction::Max | AggregateFunction::Min => {
-                // For min and max agg function, the returned type is same as input type.
-                // The coerced_data_types is same with input_types.
-                Ok(coerced_data_types[0].clone())
-            }
             AggregateFunction::BoolAnd | AggregateFunction::BoolOr => {
                 Ok(DataType::Boolean)
             }
@@ -166,18 +153,6 @@ impl AggregateFunction {
         match self {
             AggregateFunction::Grouping | AggregateFunction::ArrayAgg => {
                 Signature::any(1, Volatility::Immutable)
-            }
-            AggregateFunction::Min | AggregateFunction::Max => {
-                let valid = STRINGS
-                    .iter()
-                    .chain(NUMERICS.iter())
-                    .chain(TIMESTAMPS.iter())
-                    .chain(DATES.iter())
-                    .chain(TIMES.iter())
-                    .chain(BINARYS.iter())
-                    .cloned()
-                    .collect::<Vec<_>>();
-                Signature::uniform(1, valid, Volatility::Immutable)
             }
             AggregateFunction::BoolAnd | AggregateFunction::BoolOr => {
                 Signature::uniform(1, vec![DataType::Boolean], Volatility::Immutable)

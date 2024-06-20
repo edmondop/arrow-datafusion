@@ -54,10 +54,10 @@ use datafusion_expr::expr::{
 };
 use datafusion_expr::logical_plan::{Extension, UserDefinedLogicalNodeCore};
 use datafusion_expr::{
-    Accumulator, AggregateExt,  ColumnarValue, ExprSchemable,
-    LogicalPlan, Operator, PartitionEvaluator, ScalarUDF, ScalarUDFImpl, Signature,
-    TryCast, Volatility, WindowFrame, WindowFrameBound, WindowFrameUnits,
-    WindowFunctionDefinition, WindowUDF, WindowUDFImpl,
+    Accumulator, AggregateExt, ColumnarValue, ExprSchemable, LogicalPlan, Operator,
+    PartitionEvaluator, ScalarUDF, ScalarUDFImpl, Signature, TryCast, Volatility,
+    WindowFrame, WindowFrameBound, WindowFrameUnits, WindowFunctionDefinition, WindowUDF,
+    WindowUDFImpl,
 };
 use datafusion_functions_aggregate::expr_fn::{bit_and, bit_or, bit_xor};
 use datafusion_functions_aggregate::string_agg::string_agg;
@@ -2025,7 +2025,6 @@ fn roundtrip_window() {
         WindowFrameBound::Preceding(ScalarValue::UInt64(Some(2))),
         WindowFrameBound::Following(ScalarValue::UInt64(Some(2))),
     );
-
 
     // 5. test with AggregateUDF
     #[derive(Debug)]

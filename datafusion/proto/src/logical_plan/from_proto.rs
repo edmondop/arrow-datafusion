@@ -137,7 +137,6 @@ impl From<&protobuf::StringifiedPlan> for StringifiedPlan {
 impl From<protobuf::AggregateFunction> for AggregateFunction {
     fn from(agg_fun: protobuf::AggregateFunction) -> Self {
         match agg_fun {
-            
             protobuf::AggregateFunction::Avg => Self::Avg,
             protobuf::AggregateFunction::BoolAnd => Self::BoolAnd,
             protobuf::AggregateFunction::BoolOr => Self::BoolOr,

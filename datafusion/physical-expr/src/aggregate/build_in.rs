@@ -107,7 +107,7 @@ pub fn create_aggregate_expr(
                 data_type,
                 is_expr_nullable,
             ))
-        },
+        }
         (AggregateFunction::Avg, false) => {
             Arc::new(Avg::new(input_phy_exprs[0].clone(), name, data_type))
         }
@@ -156,7 +156,7 @@ mod tests {
     use datafusion_expr::{type_coercion, Signature};
 
     use crate::expressions::{
-        try_cast, ArrayAgg, Avg, BoolAnd, BoolOr, DistinctArrayAgg, Max, Min,
+        try_cast, ArrayAgg, Avg, BoolAnd, BoolOr, DistinctArrayAgg,
     };
 
     use super::*;
@@ -222,7 +222,6 @@ mod tests {
         Ok(())
     }
 
-
     #[test]
     fn test_bool_and_or_expr() -> Result<()> {
         let funcs = vec![AggregateFunction::BoolAnd, AggregateFunction::BoolOr];
@@ -266,7 +265,7 @@ mod tests {
     }
 
     #[test]
-    fn test_sum_avg_expr() -> Result<()> {
+    fn test_avg_expr() -> Result<()> {
         let funcs = vec![AggregateFunction::Avg];
         let data_types = vec![
             DataType::UInt32,
@@ -300,27 +299,6 @@ mod tests {
                 };
             }
         }
-        Ok(())
-    }
-
-    #[test]
-    fn test_min_max() -> Result<()> {
-        let observed = AggregateFunction::Min.return_type(&[DataType::Utf8])?;
-        assert_eq!(DataType::Utf8, observed);
-
-        let observed = AggregateFunction::Max.return_type(&[DataType::Int32])?;
-        assert_eq!(DataType::Int32, observed);
-
-        // test decimal for min
-        let observed =
-            AggregateFunction::Min.return_type(&[DataType::Decimal128(10, 6)])?;
-        assert_eq!(DataType::Decimal128(10, 6), observed);
-
-        // test decimal for max
-        let observed =
-            AggregateFunction::Max.return_type(&[DataType::Decimal128(28, 13)])?;
-        assert_eq!(DataType::Decimal128(28, 13), observed);
-
         Ok(())
     }
 

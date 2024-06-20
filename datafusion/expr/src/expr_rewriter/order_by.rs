@@ -161,6 +161,7 @@ mod test {
     };
 
     use super::*;
+    use crate::test::function_stub::min;
 
     #[test]
     fn rewrite_sort_cols_by_agg() {

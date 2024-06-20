@@ -15,7 +15,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-
 use crate::{AggregateFunction, Signature, TypeSignature};
 
 use arrow::datatypes::{
@@ -370,9 +369,7 @@ mod tests {
 
         // test count, array_agg, approx_distinct.
         // the coerced types is same with input types
-        let funs = vec![
-            AggregateFunction::ArrayAgg,
-        ];
+        let funs = vec![AggregateFunction::ArrayAgg];
         let input_types = vec![
             vec![DataType::Int32],
             vec![DataType::Decimal128(10, 2)],

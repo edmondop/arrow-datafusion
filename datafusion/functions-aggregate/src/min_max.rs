@@ -34,10 +34,6 @@
 
 //! Defines `MAX`  aggregate accumulators
 
-use arrow::datatypes::{
-    DataType, Decimal128Type, Decimal256Type, Float32Type, Float64Type, Int16Type, Int32Type, Int64Type, Int8Type,
-    UInt16Type, UInt32Type, UInt64Type, UInt8Type,
-};
 use arrow::array::{
     ArrayRef, BinaryArray, BooleanArray, Date32Array, Date64Array, Decimal128Array,
     Decimal256Array, Float32Array, Float64Array, Int16Array, Int32Array, Int64Array,
@@ -47,6 +43,10 @@ use arrow::array::{
     TimestampSecondArray, UInt16Array, UInt32Array, UInt64Array, UInt8Array,
 };
 use arrow::compute;
+use arrow::datatypes::{
+    DataType, Decimal128Type, Decimal256Type, Float32Type, Float64Type, Int16Type,
+    Int32Type, Int64Type, Int8Type, UInt16Type, UInt32Type, UInt64Type, UInt8Type,
+};
 use datafusion_common::{downcast_value, internal_err, DataFusionError, Result};
 use datafusion_physical_expr_common::aggregate::groups_accumulator::prim_op::PrimitiveGroupsAccumulator;
 use std::fmt::Debug;
@@ -706,8 +706,6 @@ impl Accumulator for MaxAccumulator {
     }
 }
 
-
-
 #[derive(Debug)]
 pub struct Min {
     signature: Signature,
@@ -876,7 +874,6 @@ impl Accumulator for MinAccumulator {
         std::mem::size_of_val(self) - std::mem::size_of_val(&self.min) + self.min.size()
     }
 }
-
 
 #[cfg(test)]
 mod tests {

@@ -35,8 +35,8 @@ use datafusion_common_runtime::SpawnedTask;
 use datafusion_expr::type_coercion::aggregates::coerce_types;
 use datafusion_expr::type_coercion::functions::data_types_with_aggregate_udf;
 use datafusion_expr::{
-    BuiltInWindowFunction, WindowFrame, WindowFrameBound,
-    WindowFrameUnits, WindowFunctionDefinition,
+    BuiltInWindowFunction, WindowFrame, WindowFrameBound, WindowFrameUnits,
+    WindowFunctionDefinition,
 };
 use datafusion_functions_aggregate::count::count_udaf;
 use datafusion_functions_aggregate::min_max::{max_udaf, min_udaf};

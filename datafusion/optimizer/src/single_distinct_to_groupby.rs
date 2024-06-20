@@ -362,11 +362,9 @@ mod tests {
     use crate::test::*;
     use datafusion_expr::expr::{self, GroupingSet};
     use datafusion_expr::AggregateExt;
-    use datafusion_expr::{
-        lit, logical_plan::builder::LogicalPlanBuilder, max, min, AggregateFunction,
-    };
+    use datafusion_expr::{lit, logical_plan::builder::LogicalPlanBuilder};
     use datafusion_functions_aggregate::count::count_udaf;
-    use datafusion_functions_aggregate::expr_fn::{count, count_distinct, sum};
+    use datafusion_functions_aggregate::expr_fn::{count, count_distinct, max, min, sum};
     use datafusion_functions_aggregate::sum::sum_udaf;
 
     fn assert_optimized_plan_equal(plan: LogicalPlan, expected: &str) -> Result<()> {
@@ -527,17 +525,7 @@ mod tests {
         let plan = LogicalPlanBuilder::from(table_scan)
             .aggregate(
                 vec![col("a")],
-                vec![
-                    count_distinct(col("b")),
-                    Expr::AggregateFunction(expr::AggregateFunction::new(
-                        AggregateFunction::Max,
-                        vec![col("b")],
-                        true,
-                        None,
-                        None,
-                        None,
-                    )),
-                ],
+                vec![count_distinct(col("b")), max(col("b"))],
             )?
             .build()?;
         // Should work
@@ -591,18 +579,7 @@ mod tests {
         let plan = LogicalPlanBuilder::from(table_scan)
             .aggregate(
                 vec![col("a")],
-                vec![
-                    sum(col("c")),
-                    count_distinct(col("b")),
-                    Expr::AggregateFunction(expr::AggregateFunction::new(
-                        AggregateFunction::Max,
-                        vec![col("b")],
-                        true,
-                        None,
-                        None,
-                        None,
-                    )),
-                ],
+                vec![sum(col("c")), count_distinct(col("b")), max(col("b"))],
             )?
             .build()?;
         // Should work

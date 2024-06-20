@@ -145,9 +145,7 @@ mod tests {
     use datafusion_common::plan_err;
     use datafusion_expr::{type_coercion, Signature};
 
-    use crate::expressions::{
-        try_cast, ArrayAgg, Avg, BoolAnd, BoolOr, DistinctArrayAgg,
-    };
+    use crate::expressions::{try_cast, ArrayAgg, Avg, DistinctArrayAgg};
 
     use super::*;
     #[test]

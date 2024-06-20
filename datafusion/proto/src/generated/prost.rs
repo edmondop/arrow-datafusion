@@ -1947,8 +1947,8 @@ pub enum AggregateFunction {
     /// BIT_AND = 19;
     /// BIT_OR = 20;
     /// BIT_XOR = 21;
-    BoolAnd = 22,
-    BoolOr = 23,
+    ///   BOOL_AND = 22;
+    ///   BOOL_OR = 23;
     /// REGR_SLOPE = 26;
     /// REGR_INTERCEPT = 27;
     /// REGR_COUNT = 28;
@@ -1972,8 +1972,6 @@ impl AggregateFunction {
             AggregateFunction::ArrayAgg => "ARRAY_AGG",
             AggregateFunction::Correlation => "CORRELATION",
             AggregateFunction::Grouping => "GROUPING",
-            AggregateFunction::BoolAnd => "BOOL_AND",
-            AggregateFunction::BoolOr => "BOOL_OR",
             AggregateFunction::NthValueAgg => "NTH_VALUE_AGG",
             AggregateFunction::UNUSED => "UNUSED",
         }
@@ -1985,8 +1983,6 @@ impl AggregateFunction {
             "ARRAY_AGG" => Some(Self::ArrayAgg),
             "CORRELATION" => Some(Self::Correlation),
             "GROUPING" => Some(Self::Grouping),
-            "BOOL_AND" => Some(Self::BoolAnd),
-            "BOOL_OR" => Some(Self::BoolOr),
             "NTH_VALUE_AGG" => Some(Self::NthValueAgg),
             _ => None,
         }

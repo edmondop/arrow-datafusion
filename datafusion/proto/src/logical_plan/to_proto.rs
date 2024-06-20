@@ -109,8 +109,6 @@ impl From<&AggregateFunction> for protobuf::AggregateFunction {
     fn from(value: &AggregateFunction) -> Self {
         match value {
             AggregateFunction::Avg => Self::Avg,
-            AggregateFunction::BoolAnd => Self::BoolAnd,
-            AggregateFunction::BoolOr => Self::BoolOr,
             AggregateFunction::ArrayAgg => Self::ArrayAgg,
             AggregateFunction::Correlation => Self::Correlation,
             AggregateFunction::Grouping => Self::Grouping,

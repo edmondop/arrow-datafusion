@@ -43,10 +43,6 @@ pub enum AggregateFunction {
     Correlation,
     /// Grouping
     Grouping,
-    /// Bool And
-    BoolAnd,
-    /// Bool Or
-    BoolOr,
 }
 
 impl AggregateFunction {
@@ -58,8 +54,6 @@ impl AggregateFunction {
             NthValue => "NTH_VALUE",
             Correlation => "CORR",
             Grouping => "GROUPING",
-            BoolAnd => "BOOL_AND",
-            BoolOr => "BOOL_OR",
         }
     }
 }
@@ -76,8 +70,6 @@ impl FromStr for AggregateFunction {
         Ok(match name {
             // general
             "avg" => AggregateFunction::Avg,
-            "bool_and" => AggregateFunction::BoolAnd,
-            "bool_or" => AggregateFunction::BoolOr,
             "mean" => AggregateFunction::Avg,
             "array_agg" => AggregateFunction::ArrayAgg,
             "nth_value" => AggregateFunction::NthValue,
@@ -157,7 +149,6 @@ impl AggregateFunction {
             AggregateFunction::BoolAnd | AggregateFunction::BoolOr => {
                 Signature::uniform(1, vec![DataType::Boolean], Volatility::Immutable)
             }
-
             AggregateFunction::Avg => {
                 Signature::uniform(1, NUMERICS.to_vec(), Volatility::Immutable)
             }

@@ -66,16 +66,6 @@ pub fn create_aggregate_expr(
             name,
             data_type,
         )),
-        (AggregateFunction::BoolAnd, _) => Arc::new(expressions::BoolAnd::new(
-            input_phy_exprs[0].clone(),
-            name,
-            data_type,
-        )),
-        (AggregateFunction::BoolOr, _) => Arc::new(expressions::BoolOr::new(
-            input_phy_exprs[0].clone(),
-            name,
-            data_type,
-        )),
         (AggregateFunction::ArrayAgg, false) => {
             let expr = input_phy_exprs[0].clone();
             let nullable = expr.nullable(input_schema)?;
@@ -243,21 +233,9 @@ mod tests {
                 match fun {
                     AggregateFunction::BoolAnd => {
                         assert!(result_agg_phy_exprs.as_any().is::<BoolAnd>());
-                        assert_eq!("c1", result_agg_phy_exprs.name());
-                        assert_eq!(
-                            Field::new("c1", data_type.clone(), true),
-                            result_agg_phy_exprs.field().unwrap()
-                        );
                     }
                     AggregateFunction::BoolOr => {
                         assert!(result_agg_phy_exprs.as_any().is::<BoolOr>());
-                        assert_eq!("c1", result_agg_phy_exprs.name());
-                        assert_eq!(
-                            Field::new("c1", data_type.clone(), true),
-                            result_agg_phy_exprs.field().unwrap()
-                        );
-                    }
-                    _ => {}
                 };
             }
         }
@@ -266,6 +244,7 @@ mod tests {
 
     #[test]
     fn test_avg_expr() -> Result<()> {
+    fn test_sum_avg_expr() -> Result<()> {
         let funcs = vec![AggregateFunction::Avg];
         let data_types = vec![
             DataType::UInt32,

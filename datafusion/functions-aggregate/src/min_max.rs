@@ -560,7 +560,7 @@ impl AggregateUDFImpl for Max {
     }
 
     fn name(&self) -> &str {
-        "max"
+        "MAX"
     }
 
     fn signature(&self) -> &Signature {
@@ -596,12 +596,11 @@ impl AggregateUDFImpl for Max {
                     PrimitiveGroupsAccumulator::<$PRIMTYPE, _>::new(
                         data_type,
                         |cur, new| {
-                            if *cur > new {
+                            if *cur < new {
                                 *cur = new
                             }
                         },
                     )
-                    // Initialize each accumulator to $NATIVE::MIN
                     .with_starting_value($NATIVE::MIN),
                 ))
             }};
@@ -730,7 +729,7 @@ impl AggregateUDFImpl for Min {
     }
 
     fn name(&self) -> &str {
-        "Min"
+        "MIN"
     }
 
     fn signature(&self) -> &Signature {
@@ -766,13 +765,12 @@ impl AggregateUDFImpl for Min {
                     PrimitiveGroupsAccumulator::<$PRIMTYPE, _>::new(
                         data_type,
                         |cur, new| {
-                            if *cur < new {
+                            if *cur > new {
                                 *cur = new
                             }
                         },
                     )
-                    // Initialize each accumulator to $NATIVE::MIN
-                    .with_starting_value($NATIVE::MIN),
+                    .with_starting_value($NATIVE::MAX),
                 ))
             }};
         }

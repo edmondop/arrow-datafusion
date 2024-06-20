@@ -45,7 +45,6 @@ impl<'a, S: ContextProvider> SqlToRel<'a, S> {
         }
 
         let set_expr = *query.body;
-
         match set_expr {
             SetExpr::Select(mut select) => {
                 let select_into = select.into.take();

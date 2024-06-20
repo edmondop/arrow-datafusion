@@ -29,7 +29,6 @@ impl<'a, S: ContextProvider> SqlToRel<'a, S> {
         relation: TableFactor,
         planner_context: &mut PlannerContext,
     ) -> Result<LogicalPlan> {
-        println!("Creating relation {:#?}", relation);
         let (plan, alias) = match relation {
             TableFactor::Table {
                 name, alias, args, ..

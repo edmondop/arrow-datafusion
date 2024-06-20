@@ -733,7 +733,7 @@ impl AggregateUDFImpl for Min {
     }
 
     fn name(&self) -> &str {
-        "min"
+        "MIN"
     }
 
     fn signature(&self) -> &Signature {

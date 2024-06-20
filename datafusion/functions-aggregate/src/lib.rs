@@ -126,6 +126,7 @@ pub fn all_default_aggregate_functions() -> Vec<Arc<AggregateUDF>> {
         sum::sum_udaf(),
         covariance::covar_pop_udaf(),
         min_max::max_udaf(),
+        min_max::min_udaf(),
         median::median_udaf(),
         count::count_udaf(),
         regr::regr_slope_udaf(),

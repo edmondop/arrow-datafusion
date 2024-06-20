@@ -538,12 +538,14 @@ fn min_max_aggregate_data_type(input_type: DataType) -> DataType {
 #[derive(Debug)]
 pub struct Max {
     signature: Signature,
+    aliases: Vec<String>,
 }
 
 impl Max {
     pub fn new() -> Self {
         Self {
             signature: Signature::numeric(1, Volatility::Immutable),
+            aliases: vec!["max".to_owned()],
         }
     }
 }
@@ -576,7 +578,7 @@ impl AggregateUDFImpl for Max {
     }
 
     fn aliases(&self) -> &[String] {
-        &[]
+        &self.aliases
     }
 
     fn groups_accumulator_supported(&self, _args: AccumulatorArgs) -> bool {
@@ -708,12 +710,14 @@ impl Accumulator for MaxAccumulator {
 #[derive(Debug)]
 pub struct Min {
     signature: Signature,
+    aliases: Vec<String>,
 }
 
 impl Min {
     pub fn new() -> Self {
         Self {
             signature: Signature::numeric(1, Volatility::Immutable),
+            aliases: vec!["min".to_owned()],
         }
     }
 }
@@ -729,7 +733,7 @@ impl AggregateUDFImpl for Min {
     }
 
     fn name(&self) -> &str {
-        "MIN"
+        "min"
     }
 
     fn signature(&self) -> &Signature {
@@ -745,7 +749,7 @@ impl AggregateUDFImpl for Min {
     }
 
     fn aliases(&self) -> &[String] {
-        &[]
+        &self.aliases
     }
 
     fn groups_accumulator_supported(&self, _args: AccumulatorArgs) -> bool {

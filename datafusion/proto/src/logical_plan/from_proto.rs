@@ -142,7 +142,7 @@ impl From<protobuf::AggregateFunction> for AggregateFunction {
             protobuf::AggregateFunction::Correlation => Self::Correlation,
             protobuf::AggregateFunction::Grouping => Self::Grouping,
             protobuf::AggregateFunction::NthValueAgg => Self::NthValue,
-            protobuf::AggregateFunction::UNUSED => panic!("This should never happen, we are retiring this but protobuf doesn't support enum with no 0 values"),
+            protobuf::AggregateFunction::Unused => panic!("This should never happen, we are retiring this but protobuf doesn't support enum with no 0 values"),
         }
     }
 }

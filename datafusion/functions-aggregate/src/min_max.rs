@@ -609,28 +609,28 @@ impl AggregateUDFImpl for Max {
     fn groups_accumulator_supported(&self, _args: AccumulatorArgs) -> bool {
         matches!(
             _args.data_type,
-            DataType::Int8 |
-            DataType::Int16 |
-            DataType::Int32 | 
-            DataType::Int64 |
-            DataType::UInt8 |
-            DataType::UInt16 |
-            DataType::UInt32 | 
-            DataType::UInt64 |
-            DataType::Float32 |
-            DataType::Float64 |
-            DataType::Date32 |
-            DataType::Date64 |
-            DataType::Time32(TimeUnit::Second) |
-            DataType::Time32(TimeUnit::Millisecond) |
-            DataType::Time64(TimeUnit::Microsecond) |
-            DataType::Time64(TimeUnit::Nanosecond) |
-            DataType::Timestamp(TimeUnit::Second, _) |
-            DataType::Timestamp(TimeUnit::Millisecond, _) |
-            DataType::Timestamp(TimeUnit::Microsecond, _) |
-            DataType::Timestamp(TimeUnit::Nanosecond, _) |
-            DataType::Decimal128(_, _) |
-            DataType::Decimal256(_, _)
+            DataType::Int8
+                | DataType::Int16
+                | DataType::Int32
+                | DataType::Int64
+                | DataType::UInt8
+                | DataType::UInt16
+                | DataType::UInt32
+                | DataType::UInt64
+                | DataType::Float32
+                | DataType::Float64
+                | DataType::Date32
+                | DataType::Date64
+                | DataType::Time32(TimeUnit::Second)
+                | DataType::Time32(TimeUnit::Millisecond)
+                | DataType::Time64(TimeUnit::Microsecond)
+                | DataType::Time64(TimeUnit::Nanosecond)
+                | DataType::Timestamp(TimeUnit::Second, _)
+                | DataType::Timestamp(TimeUnit::Millisecond, _)
+                | DataType::Timestamp(TimeUnit::Microsecond, _)
+                | DataType::Timestamp(TimeUnit::Nanosecond, _)
+                | DataType::Decimal128(_, _)
+                | DataType::Decimal256(_, _)
         )
     }
 
@@ -804,28 +804,28 @@ impl AggregateUDFImpl for Min {
     fn groups_accumulator_supported(&self, _args: AccumulatorArgs) -> bool {
         matches!(
             _args.data_type,
-            DataType::Int8 |
-            DataType::Int16 |
-            DataType::Int32 | 
-            DataType::Int64 |
-            DataType::UInt8 |
-            DataType::UInt16 |
-            DataType::UInt32 | 
-            DataType::UInt64 |
-            DataType::Float32 |
-            DataType::Float64 |
-            DataType::Date32 |
-            DataType::Date64 |
-            DataType::Time32(TimeUnit::Second) |
-            DataType::Time32(TimeUnit::Millisecond) |
-            DataType::Time64(TimeUnit::Microsecond) |
-            DataType::Time64(TimeUnit::Nanosecond) |
-            DataType::Timestamp(TimeUnit::Second, _) |
-            DataType::Timestamp(TimeUnit::Millisecond, _) |
-            DataType::Timestamp(TimeUnit::Microsecond, _) |
-            DataType::Timestamp(TimeUnit::Nanosecond, _) |
-            DataType::Decimal128(_, _) |
-            DataType::Decimal256(_, _)
+            DataType::Int8
+                | DataType::Int16
+                | DataType::Int32
+                | DataType::Int64
+                | DataType::UInt8
+                | DataType::UInt16
+                | DataType::UInt32
+                | DataType::UInt64
+                | DataType::Float32
+                | DataType::Float64
+                | DataType::Date32
+                | DataType::Date64
+                | DataType::Time32(TimeUnit::Second)
+                | DataType::Time32(TimeUnit::Millisecond)
+                | DataType::Time64(TimeUnit::Microsecond)
+                | DataType::Time64(TimeUnit::Nanosecond)
+                | DataType::Timestamp(TimeUnit::Second, _)
+                | DataType::Timestamp(TimeUnit::Millisecond, _)
+                | DataType::Timestamp(TimeUnit::Microsecond, _)
+                | DataType::Timestamp(TimeUnit::Nanosecond, _)
+                | DataType::Decimal128(_, _)
+                | DataType::Decimal256(_, _)
         )
     }
 
@@ -904,7 +904,6 @@ impl AggregateUDFImpl for Min {
             // https://github.com/apache/datafusion/issues/6906
 
             // This is only reached if groups_accumulator_supported is out of sync
-            
             _ => internal_err!("GroupsAccumulator not supported for min({})", data_type),
         }
     }

@@ -496,6 +496,31 @@ fn max_batch(values: &ArrayRef) -> Result<ScalarValue> {
     })
 }
 
+fn min_batch(values: &ArrayRef) -> Result<ScalarValue> {
+    Ok(match values.data_type() {
+        DataType::Utf8 => {
+            typed_min_max_batch_string!(values, StringArray, Utf8, min_string)
+        }
+        DataType::LargeUtf8 => {
+            typed_min_max_batch_string!(values, LargeStringArray, LargeUtf8, min_string)
+        }
+        DataType::Boolean => {
+            typed_min_max_batch!(values, BooleanArray, Boolean, min_boolean)
+        }
+        DataType::Binary => {
+            typed_min_max_batch_binary!(&values, BinaryArray, Binary, min_binary)
+        }
+        DataType::LargeBinary => {
+            typed_min_max_batch_binary!(
+                &values,
+                LargeBinaryArray,
+                LargeBinary,
+                min_binary
+            )
+        }
+        _ => min_max_batch!(values, min),
+    })
+}
 // min/max of two non-string scalar values.
 macro_rules! typed_min_max {
     ($VALUE:expr, $DELTA:expr, $SCALAR:ident, $OP:ident $(, $EXTRA_ARGS:ident)*) => {{
@@ -582,7 +607,31 @@ impl AggregateUDFImpl for Max {
     }
 
     fn groups_accumulator_supported(&self, _args: AccumulatorArgs) -> bool {
-        true
+        matches!(
+            _args.data_type,
+            DataType::Int8 |
+            DataType::Int16 |
+            DataType::Int32 | 
+            DataType::Int64 |
+            DataType::UInt8 |
+            DataType::UInt16 |
+            DataType::UInt32 | 
+            DataType::UInt64 |
+            DataType::Float32 |
+            DataType::Float64 |
+            DataType::Date32 |
+            DataType::Date64 |
+            DataType::Time32(TimeUnit::Second) |
+            DataType::Time32(TimeUnit::Millisecond) |
+            DataType::Time64(TimeUnit::Microsecond) |
+            DataType::Time64(TimeUnit::Nanosecond) |
+            DataType::Timestamp(TimeUnit::Second, _) |
+            DataType::Timestamp(TimeUnit::Millisecond, _) |
+            DataType::Timestamp(TimeUnit::Microsecond, _) |
+            DataType::Timestamp(TimeUnit::Nanosecond, _) |
+            DataType::Decimal128(_, _) |
+            DataType::Decimal256(_, _)
+        )
     }
 
     fn create_groups_accumulator(
@@ -753,7 +802,31 @@ impl AggregateUDFImpl for Min {
     }
 
     fn groups_accumulator_supported(&self, _args: AccumulatorArgs) -> bool {
-        true
+        matches!(
+            _args.data_type,
+            DataType::Int8 |
+            DataType::Int16 |
+            DataType::Int32 | 
+            DataType::Int64 |
+            DataType::UInt8 |
+            DataType::UInt16 |
+            DataType::UInt32 | 
+            DataType::UInt64 |
+            DataType::Float32 |
+            DataType::Float64 |
+            DataType::Date32 |
+            DataType::Date64 |
+            DataType::Time32(TimeUnit::Second) |
+            DataType::Time32(TimeUnit::Millisecond) |
+            DataType::Time64(TimeUnit::Microsecond) |
+            DataType::Time64(TimeUnit::Nanosecond) |
+            DataType::Timestamp(TimeUnit::Second, _) |
+            DataType::Timestamp(TimeUnit::Millisecond, _) |
+            DataType::Timestamp(TimeUnit::Microsecond, _) |
+            DataType::Timestamp(TimeUnit::Nanosecond, _) |
+            DataType::Decimal128(_, _) |
+            DataType::Decimal256(_, _)
+        )
     }
 
     fn create_groups_accumulator(
@@ -831,6 +904,7 @@ impl AggregateUDFImpl for Min {
             // https://github.com/apache/datafusion/issues/6906
 
             // This is only reached if groups_accumulator_supported is out of sync
+            
             _ => internal_err!("GroupsAccumulator not supported for min({})", data_type),
         }
     }
@@ -857,7 +931,7 @@ impl Accumulator for MinAccumulator {
 
     fn update_batch(&mut self, values: &[ArrayRef]) -> Result<()> {
         let values = &values[0];
-        let delta = &max_batch(values)?;
+        let delta = &min_batch(values)?;
         let new_min: Result<ScalarValue, DataFusionError> =
             min_max!(&self.min, delta, min);
         self.min = new_min?;

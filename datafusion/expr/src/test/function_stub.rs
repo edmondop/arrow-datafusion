@@ -287,7 +287,7 @@ pub fn min(expr: Expr) -> Expr {
     ))
 }
 
-/// Testing stub implementation of COUNT aggregate
+/// Testing stub implementation of Min aggregate
 pub struct Min {
     signature: Signature,
     aliases: Vec<String>,
@@ -371,7 +371,7 @@ pub fn max(expr: Expr) -> Expr {
     ))
 }
 
-/// Testing stub implementation of COUNT aggregate
+/// Testing stub implementation of MAX aggregate
 pub struct Max {
     signature: Signature,
     aliases: Vec<String>,

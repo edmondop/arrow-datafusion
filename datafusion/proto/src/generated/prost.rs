@@ -1926,7 +1926,8 @@ pub struct PartitionStats {
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
 #[repr(i32)]
 pub enum AggregateFunction {
-    UNUSED = 0,
+    Unused = 0,
+    /// MAX = 1;
     /// SUM = 2;
     Avg = 3,
     /// COUNT = 4;
@@ -1968,17 +1969,18 @@ impl AggregateFunction {
     /// (if the ProtoBuf definition does not change) and safe for programmatic use.
     pub fn as_str_name(&self) -> &'static str {
         match self {
+            AggregateFunction::Unused => "UNUSED",
             AggregateFunction::Avg => "AVG",
             AggregateFunction::ArrayAgg => "ARRAY_AGG",
             AggregateFunction::Correlation => "CORRELATION",
             AggregateFunction::Grouping => "GROUPING",
             AggregateFunction::NthValueAgg => "NTH_VALUE_AGG",
-            AggregateFunction::UNUSED => "UNUSED",
         }
     }
     /// Creates an enum from field names used in the ProtoBuf definition.
     pub fn from_str_name(value: &str) -> ::core::option::Option<Self> {
         match value {
+            "UNUSED" => Some(Self::Unused),
             "AVG" => Some(Self::Avg),
             "ARRAY_AGG" => Some(Self::ArrayAgg),
             "CORRELATION" => Some(Self::Correlation),

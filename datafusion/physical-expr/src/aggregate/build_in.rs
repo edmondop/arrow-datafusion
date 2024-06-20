@@ -213,38 +213,7 @@ mod tests {
     }
 
     #[test]
-    fn test_bool_and_or_expr() -> Result<()> {
-        let funcs = vec![AggregateFunction::BoolAnd, AggregateFunction::BoolOr];
-        let data_types = vec![DataType::Boolean];
-        for fun in funcs {
-            for data_type in &data_types {
-                let input_schema =
-                    Schema::new(vec![Field::new("c1", data_type.clone(), true)]);
-                let input_phy_exprs: Vec<Arc<dyn PhysicalExpr>> = vec![Arc::new(
-                    expressions::Column::new_with_schema("c1", &input_schema).unwrap(),
-                )];
-                let result_agg_phy_exprs = create_physical_agg_expr_for_test(
-                    &fun,
-                    false,
-                    &input_phy_exprs[0..1],
-                    &input_schema,
-                    "c1",
-                )?;
-                match fun {
-                    AggregateFunction::BoolAnd => {
-                        assert!(result_agg_phy_exprs.as_any().is::<BoolAnd>());
-                    }
-                    AggregateFunction::BoolOr => {
-                        assert!(result_agg_phy_exprs.as_any().is::<BoolOr>());
-                };
-            }
-        }
-        Ok(())
-    }
-
-    #[test]
     fn test_avg_expr() -> Result<()> {
-    fn test_sum_avg_expr() -> Result<()> {
         let funcs = vec![AggregateFunction::Avg];
         let data_types = vec![
             DataType::UInt32,

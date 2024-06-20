@@ -107,9 +107,6 @@ impl AggregateFunction {
             })?;
 
         match self {
-            AggregateFunction::BoolAnd | AggregateFunction::BoolOr => {
-                Ok(DataType::Boolean)
-            }
             AggregateFunction::Correlation => {
                 correlation_return_type(&coerced_data_types[0])
             }
@@ -145,9 +142,6 @@ impl AggregateFunction {
         match self {
             AggregateFunction::Grouping | AggregateFunction::ArrayAgg => {
                 Signature::any(1, Volatility::Immutable)
-            }
-            AggregateFunction::BoolAnd | AggregateFunction::BoolOr => {
-                Signature::uniform(1, vec![DataType::Boolean], Volatility::Immutable)
             }
             AggregateFunction::Avg => {
                 Signature::uniform(1, NUMERICS.to_vec(), Volatility::Immutable)

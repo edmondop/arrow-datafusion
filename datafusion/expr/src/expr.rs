@@ -2236,8 +2236,6 @@ mod test {
             "first_value",
             "last_value",
             "nth_value",
-            "min",
-            "max",
             "avg",
         ];
         for name in names {

@@ -179,10 +179,11 @@ mod tests {
     #[test]
     fn test_no_duplicate_name() -> Result<()> {
         let mut names = HashSet::new();
+        let migrated_functions = vec!["count", "max", "min"];
         for func in all_default_aggregate_functions() {
             // TODO: remove this
             // These functions are in intermidiate migration state, skip them
-            if func.name().to_lowercase() == "count" {
+            if migrated_functions.contains(&func.name().to_lowercase().as_str()) {
                 continue;
             }
             assert!(

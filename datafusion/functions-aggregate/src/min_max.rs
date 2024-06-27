@@ -41,6 +41,7 @@ use arrow::array::{
     Time32SecondArray, Time64MicrosecondArray, Time64NanosecondArray,
     TimestampMicrosecondArray, TimestampMillisecondArray, TimestampNanosecondArray,
     TimestampSecondArray, UInt16Array, UInt32Array, UInt64Array, UInt8Array,
+    IntervalDayTimeArray, IntervalMonthDayNanoArray, IntervalYearMonthArray,
 };
 use arrow::compute;
 use arrow::datatypes::{
@@ -58,6 +59,7 @@ use arrow::datatypes::{
 };
 
 use arrow::datatypes::i256;
+use arrow_schema::IntervalUnit;
 
 use datafusion_common::ScalarValue;
 use datafusion_expr::GroupsAccumulator;
@@ -443,7 +445,25 @@ macro_rules! min_max_batch {
                     $OP
                 )
             }
-            other => {
+            DataType::Interval(IntervalUnit::YearMonth) => {
+                typed_min_max_batch!(
+                    $VALUES,
+                    IntervalYearMonthArray,
+                    IntervalYearMonth,
+                    $OP
+                )
+            }
+            DataType::Interval(IntervalUnit::DayTime) => {
+                typed_min_max_batch!($VALUES, IntervalDayTimeArray, IntervalDayTime, $OP)
+            }
+            DataType::Interval(IntervalUnit::MonthDayNano) => {
+                typed_min_max_batch!(
+                    $VALUES,
+                    IntervalMonthDayNanoArray,
+                    IntervalMonthDayNano,
+                    $OP
+                )
+            }            other => {
                 // This should have been handled before
                 return internal_err!(
                     "Min/Max accumulator not implemented for type {:?}",

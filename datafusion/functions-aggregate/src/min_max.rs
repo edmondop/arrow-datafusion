@@ -65,21 +65,6 @@ use datafusion_expr::{
     function::AccumulatorArgs, Accumulator, AggregateUDFImpl, Signature, Volatility,
 };
 
-// min/max of two non-string scalar values.
-macro_rules! typed_min_max {
-    ($VALUE:expr, $DELTA:expr, $SCALAR:ident, $OP:ident $(, $EXTRA_ARGS:ident)*) => {{
-        ScalarValue::$SCALAR(
-            match ($VALUE, $DELTA) {
-                (None, None) => None,
-                (Some(a), None) => Some(*a),
-                (None, Some(b)) => Some(*b),
-                (Some(a), Some(b)) => Some((*a).$OP(*b)),
-            },
-            $($EXTRA_ARGS.clone()),*
-        )
-    }};
-}
-
 macro_rules! typed_min_max_float {
     ($VALUE:expr, $DELTA:expr, $SCALAR:ident, $OP:ident) => {{
         ScalarValue::$SCALAR(match ($VALUE, $DELTA) {
@@ -783,7 +768,6 @@ impl<T: Clone + PartialOrd> MovingMax<T> {
     }
 }
 
-
 make_udaf_expr_and_func!(
     Max,
     max,
@@ -961,10 +945,12 @@ impl AggregateUDFImpl for Max {
         }
     }
 
-    fn create_sliding_accumulator(&self, args:AccumulatorArgs) -> Result<Box<dyn Accumulator>> {
+    fn create_sliding_accumulator(
+        &self,
+        args: AccumulatorArgs,
+    ) -> Result<Box<dyn Accumulator>> {
         Ok(Box::new(SlidingMaxAccumulator::try_new(args.data_type)?))
     }
-
 }
 
 /// An accumulator to compute the maximum value
@@ -1161,11 +1147,12 @@ impl AggregateUDFImpl for Min {
         }
     }
 
-    
-    fn create_sliding_accumulator(&self, args:AccumulatorArgs) -> Result<Box<dyn Accumulator>> {
+    fn create_sliding_accumulator(
+        &self,
+        args: AccumulatorArgs,
+    ) -> Result<Box<dyn Accumulator>> {
         Ok(Box::new(SlidingMinAccumulator::try_new(args.data_type)?))
     }
-
 }
 /// An accumulator to compute the minimum value
 #[derive(Debug)]
@@ -1209,8 +1196,6 @@ impl Accumulator for MinAccumulator {
     }
 }
 
-
-
 #[derive(Debug)]
 pub struct SlidingMinAccumulator {
     min: ScalarValue,
@@ -1218,7 +1203,6 @@ pub struct SlidingMinAccumulator {
 }
 
 impl SlidingMinAccumulator {
-
     pub fn try_new(datatype: &DataType) -> Result<Self> {
         Ok(Self {
             min: ScalarValue::try_from(datatype)?,
@@ -1372,7 +1356,6 @@ mod tests {
         check(&mut max(), &[&[zero, neg_inf]], zero);
     }
 
-    
     use datafusion_common::Result;
     use rand::Rng;
 
@@ -1440,5 +1423,4 @@ mod tests {
         moving_max_i32(100, 100)?;
         Ok(())
     }
-
 }

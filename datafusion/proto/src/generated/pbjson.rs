@@ -532,10 +532,14 @@ impl serde::Serialize for AggregateFunction {
         S: serde::Serializer,
     {
         let variant = match self {
+<<<<<<< HEAD
             Self::Unused => "UNUSED",
             Self::Avg => "AVG",
+=======
+            Self::Min => "MIN",
+            Self::Max => "MAX",
+>>>>>>> apache/main
             Self::ArrayAgg => "ARRAY_AGG",
-            Self::Correlation => "CORRELATION",
             Self::Grouping => "GROUPING",
             Self::NthValueAgg => "NTH_VALUE_AGG",
         };
@@ -549,10 +553,14 @@ impl<'de> serde::Deserialize<'de> for AggregateFunction {
         D: serde::Deserializer<'de>,
     {
         const FIELDS: &[&str] = &[
+<<<<<<< HEAD
             "UNUSED",
             "AVG",
+=======
+            "MIN",
+            "MAX",
+>>>>>>> apache/main
             "ARRAY_AGG",
-            "CORRELATION",
             "GROUPING",
             "NTH_VALUE_AGG",
         ];
@@ -595,10 +603,14 @@ impl<'de> serde::Deserialize<'de> for AggregateFunction {
                 E: serde::de::Error,
             {
                 match value {
+<<<<<<< HEAD
                     "UNUSED" => Ok(AggregateFunction::Unused),
                     "AVG" => Ok(AggregateFunction::Avg),
+=======
+                    "MIN" => Ok(AggregateFunction::Min),
+                    "MAX" => Ok(AggregateFunction::Max),
+>>>>>>> apache/main
                     "ARRAY_AGG" => Ok(AggregateFunction::ArrayAgg),
-                    "CORRELATION" => Ok(AggregateFunction::Correlation),
                     "GROUPING" => Ok(AggregateFunction::Grouping),
                     "NTH_VALUE_AGG" => Ok(AggregateFunction::NthValueAgg),
                     _ => Err(serde::de::Error::unknown_variant(value, FIELDS)),
@@ -19964,12 +19976,12 @@ impl serde::Serialize for Wildcard {
     {
         use serde::ser::SerializeStruct;
         let mut len = 0;
-        if !self.qualifier.is_empty() {
+        if self.qualifier.is_some() {
             len += 1;
         }
         let mut struct_ser = serializer.serialize_struct("datafusion.Wildcard", len)?;
-        if !self.qualifier.is_empty() {
-            struct_ser.serialize_field("qualifier", &self.qualifier)?;
+        if let Some(v) = self.qualifier.as_ref() {
+            struct_ser.serialize_field("qualifier", v)?;
         }
         struct_ser.end()
     }
@@ -20035,12 +20047,12 @@ impl<'de> serde::Deserialize<'de> for Wildcard {
                             if qualifier__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("qualifier"));
                             }
-                            qualifier__ = Some(map_.next_value()?);
+                            qualifier__ = map_.next_value()?;
                         }
                     }
                 }
                 Ok(Wildcard {
-                    qualifier: qualifier__.unwrap_or_default(),
+                    qualifier: qualifier__,
                 })
             }
         }

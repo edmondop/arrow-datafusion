@@ -60,8 +60,9 @@ use datafusion_expr::{
     WindowFrame, WindowFrameBound, WindowFrameUnits, WindowFunctionDefinition, WindowUDF,
     WindowUDFImpl,
 };
+use datafusion_functions_aggregate::average::avg_udaf;
 use datafusion_functions_aggregate::expr_fn::{
-    bit_and, bit_or, bit_xor, bool_and, bool_or,
+    avg, bit_and, bit_or, bit_xor, bool_and, bool_or, corr,
 };
 use datafusion_functions_aggregate::string_agg::string_agg;
 use datafusion_proto::bytes::{
@@ -659,8 +660,10 @@ async fn roundtrip_expr_api() -> Result<()> {
         count_distinct(lit(1)),
         first_value(lit(1), None),
         first_value(lit(1), Some(vec![lit(2).sort(true, true)])),
+        avg(lit(1.5)),
         covar_samp(lit(1.5), lit(2.2)),
         covar_pop(lit(1.5), lit(2.2)),
+        corr(lit(1.5), lit(2.2)),
         sum(lit(1)),
         max(lit(1)),
         median(lit(2)),
@@ -984,7 +987,7 @@ fn round_trip_scalar_values() {
         ScalarValue::UInt64(None),
         ScalarValue::Utf8(None),
         ScalarValue::LargeUtf8(None),
-        ScalarValue::List(ScalarValue::new_list(&[], &DataType::Boolean)),
+        ScalarValue::List(ScalarValue::new_list_nullable(&[], &DataType::Boolean)),
         ScalarValue::LargeList(ScalarValue::new_large_list(&[], &DataType::Boolean)),
         ScalarValue::Date32(None),
         ScalarValue::Boolean(Some(true)),
@@ -1076,7 +1079,7 @@ fn round_trip_scalar_values() {
             i64::MAX,
         ))),
         ScalarValue::IntervalMonthDayNano(None),
-        ScalarValue::List(ScalarValue::new_list(
+        ScalarValue::List(ScalarValue::new_list_nullable(
             &[
                 ScalarValue::Float32(Some(-213.1)),
                 ScalarValue::Float32(None),
@@ -1096,10 +1099,13 @@ fn round_trip_scalar_values() {
             ],
             &DataType::Float32,
         )),
-        ScalarValue::List(ScalarValue::new_list(
+        ScalarValue::List(ScalarValue::new_list_nullable(
             &[
-                ScalarValue::List(ScalarValue::new_list(&[], &DataType::Float32)),
-                ScalarValue::List(ScalarValue::new_list(
+                ScalarValue::List(ScalarValue::new_list_nullable(
+                    &[],
+                    &DataType::Float32,
+                )),
+                ScalarValue::List(ScalarValue::new_list_nullable(
                     &[
                         ScalarValue::Float32(Some(-213.1)),
                         ScalarValue::Float32(None),
@@ -2166,7 +2172,16 @@ fn roundtrip_window() {
         vec![col("col1")],
         vec![col("col1")],
         vec![col("col2")],
-        row_number_frame,
+        row_number_frame.clone(),
+        None,
+    ));
+
+    let text_expr7 = Expr::WindowFunction(expr::WindowFunction::new(
+        WindowFunctionDefinition::AggregateUDF(avg_udaf()),
+        vec![col("col1")],
+        vec![],
+        vec![],
+        row_number_frame.clone(),
         None,
     ));
 
@@ -2177,5 +2192,6 @@ fn roundtrip_window() {
     roundtrip_expr_test(test_expr3, ctx.clone());
     roundtrip_expr_test(test_expr4, ctx.clone());
     roundtrip_expr_test(test_expr5, ctx.clone());
-    roundtrip_expr_test(test_expr6, ctx);
+    roundtrip_expr_test(test_expr6, ctx.clone());
+    roundtrip_expr_test(text_expr7, ctx);
 }

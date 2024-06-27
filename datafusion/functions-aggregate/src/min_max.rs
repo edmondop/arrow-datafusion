@@ -41,6 +41,7 @@ use arrow::array::{
     Time32SecondArray, Time64MicrosecondArray, Time64NanosecondArray,
     TimestampMicrosecondArray, TimestampMillisecondArray, TimestampNanosecondArray,
     TimestampSecondArray, UInt16Array, UInt32Array, UInt64Array, UInt8Array,
+    IntervalDayTimeArray, IntervalMonthDayNanoArray, IntervalYearMonthArray,
 };
 use arrow::compute;
 use arrow::datatypes::{
@@ -58,27 +59,13 @@ use arrow::datatypes::{
 };
 
 use arrow::datatypes::i256;
+use arrow_schema::IntervalUnit;
 
 use datafusion_common::ScalarValue;
 use datafusion_expr::GroupsAccumulator;
 use datafusion_expr::{
     function::AccumulatorArgs, Accumulator, AggregateUDFImpl, Signature, Volatility,
 };
-
-// min/max of two non-string scalar values.
-macro_rules! typed_min_max {
-    ($VALUE:expr, $DELTA:expr, $SCALAR:ident, $OP:ident $(, $EXTRA_ARGS:ident)*) => {{
-        ScalarValue::$SCALAR(
-            match ($VALUE, $DELTA) {
-                (None, None) => None,
-                (Some(a), None) => Some(*a),
-                (None, Some(b)) => Some(*b),
-                (Some(a), Some(b)) => Some((*a).$OP(*b)),
-            },
-            $($EXTRA_ARGS.clone()),*
-        )
-    }};
-}
 
 macro_rules! typed_min_max_float {
     ($VALUE:expr, $DELTA:expr, $SCALAR:ident, $OP:ident) => {{
@@ -458,7 +445,25 @@ macro_rules! min_max_batch {
                     $OP
                 )
             }
-            other => {
+            DataType::Interval(IntervalUnit::YearMonth) => {
+                typed_min_max_batch!(
+                    $VALUES,
+                    IntervalYearMonthArray,
+                    IntervalYearMonth,
+                    $OP
+                )
+            }
+            DataType::Interval(IntervalUnit::DayTime) => {
+                typed_min_max_batch!($VALUES, IntervalDayTimeArray, IntervalDayTime, $OP)
+            }
+            DataType::Interval(IntervalUnit::MonthDayNano) => {
+                typed_min_max_batch!(
+                    $VALUES,
+                    IntervalMonthDayNanoArray,
+                    IntervalMonthDayNano,
+                    $OP
+                )
+            }            other => {
                 // This should have been handled before
                 return internal_err!(
                     "Min/Max accumulator not implemented for type {:?}",
@@ -783,7 +788,6 @@ impl<T: Clone + PartialOrd> MovingMax<T> {
     }
 }
 
-
 make_udaf_expr_and_func!(
     Max,
     max,
@@ -961,10 +965,12 @@ impl AggregateUDFImpl for Max {
         }
     }
 
-    fn create_sliding_accumulator(&self, args:AccumulatorArgs) -> Result<Box<dyn Accumulator>> {
+    fn create_sliding_accumulator(
+        &self,
+        args: AccumulatorArgs,
+    ) -> Result<Box<dyn Accumulator>> {
         Ok(Box::new(SlidingMaxAccumulator::try_new(args.data_type)?))
     }
-
 }
 
 /// An accumulator to compute the maximum value
@@ -1161,11 +1167,12 @@ impl AggregateUDFImpl for Min {
         }
     }
 
-    
-    fn create_sliding_accumulator(&self, args:AccumulatorArgs) -> Result<Box<dyn Accumulator>> {
+    fn create_sliding_accumulator(
+        &self,
+        args: AccumulatorArgs,
+    ) -> Result<Box<dyn Accumulator>> {
         Ok(Box::new(SlidingMinAccumulator::try_new(args.data_type)?))
     }
-
 }
 /// An accumulator to compute the minimum value
 #[derive(Debug)]
@@ -1209,8 +1216,6 @@ impl Accumulator for MinAccumulator {
     }
 }
 
-
-
 #[derive(Debug)]
 pub struct SlidingMinAccumulator {
     min: ScalarValue,
@@ -1218,7 +1223,6 @@ pub struct SlidingMinAccumulator {
 }
 
 impl SlidingMinAccumulator {
-
     pub fn try_new(datatype: &DataType) -> Result<Self> {
         Ok(Self {
             min: ScalarValue::try_from(datatype)?,
@@ -1372,7 +1376,6 @@ mod tests {
         check(&mut max(), &[&[zero, neg_inf]], zero);
     }
 
-    
     use datafusion_common::Result;
     use rand::Rng;
 
@@ -1440,5 +1443,4 @@ mod tests {
         moving_max_i32(100, 100)?;
         Ok(())
     }
-
 }

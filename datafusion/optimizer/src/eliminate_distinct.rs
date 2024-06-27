@@ -1,4 +1,3 @@
-
 // Licensed to the Apache Software Foundation (ASF) under one
 // or more contributor license agreements.  See the NOTICE file
 // distributed with this work for additional information
@@ -39,24 +38,31 @@ impl EliminateDistinct {
 }
 static WORKSPACE_ROOT_LOCK: OnceLock<Vec<String>> = OnceLock::new();
 
-fn rewrite_aggr_expr(expr:Expr) -> (bool, Expr) {
+fn rewrite_aggr_expr(expr: Expr) -> (bool, Expr) {
     match expr {
         Expr::AggregateFunction(ref fun) => {
             let fn_name = fun.func_def.name().to_lowercase();
-            if fun.distinct && WORKSPACE_ROOT_LOCK.get_or_init(|| vec!["min".to_string(), "max".to_string()]).contains(&fn_name) {
-                (true, Expr::AggregateFunction(AggregateFunction{
-                    func_def:fun.func_def.clone(), 
-                    args:fun.args.clone(), 
-                    distinct:false, 
-                    filter:fun.filter.clone(),
-                    order_by:fun.order_by.clone(),
-                    null_treatment: fun.null_treatment
-            }))
+            if fun.distinct
+                && WORKSPACE_ROOT_LOCK
+                    .get_or_init(|| vec!["min".to_string(), "max".to_string()])
+                    .contains(&fn_name)
+            {
+                (
+                    true,
+                    Expr::AggregateFunction(AggregateFunction {
+                        func_def: fun.func_def.clone(),
+                        args: fun.args.clone(),
+                        distinct: false,
+                        filter: fun.filter.clone(),
+                        order_by: fun.order_by.clone(),
+                        null_treatment: fun.null_treatment,
+                    }),
+                )
             } else {
                 (false, expr)
             }
-        },
-        _ => (false, expr)
+        }
+        _ => (false, expr),
     }
 }
 impl OptimizerRule for EliminateDistinct {
@@ -112,9 +118,9 @@ impl OptimizerRule for EliminateDistinct {
 mod tests {
     use super::*;
     use crate::test::*;
-    use datafusion_expr::{col, logical_plan::builder::LogicalPlanBuilder};
-    use datafusion_expr::AggregateExt;
     use datafusion_expr::test::function_stub::min;
+    use datafusion_expr::AggregateExt;
+    use datafusion_expr::{col, logical_plan::builder::LogicalPlanBuilder};
     use std::sync::Arc;
 
     fn assert_optimized_plan_eq(plan: LogicalPlan, expected: &str) -> Result<()> {

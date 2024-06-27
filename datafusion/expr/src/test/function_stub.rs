@@ -21,6 +21,14 @@
 
 use std::any::Any;
 
+use arrow::datatypes::{
+    DataType, Field, DECIMAL128_MAX_PRECISION, DECIMAL256_MAX_PRECISION,
+};
+
+use datafusion_common::{exec_err, not_impl_err, Result};
+
+use crate::type_coercion::aggregates::{avg_return_type, coerce_avg_type, NUMERICS};
+use crate::Volatility::Immutable;
 use crate::{
     expr::AggregateFunction,
     function::{AccumulatorArgs, StateFieldsArgs},
@@ -28,10 +36,6 @@ use crate::{
     Accumulator, AggregateUDFImpl, Expr, GroupsAccumulator, ReversedUDAF, Signature,
     Volatility,
 };
-use arrow::datatypes::{
-    DataType, Field, DECIMAL128_MAX_PRECISION, DECIMAL256_MAX_PRECISION,
-};
-use datafusion_common::{exec_err, not_impl_err, Result};
 
 macro_rules! create_func {
     ($UDAF:ty, $AGGREGATE_UDF_FN:ident) => {
@@ -74,6 +78,19 @@ create_func!(Count, count_udaf);
 pub fn count(expr: Expr) -> Expr {
     Expr::AggregateFunction(AggregateFunction::new_udf(
         count_udaf(),
+        vec![expr],
+        false,
+        None,
+        None,
+        None,
+    ))
+}
+
+create_func!(Avg, avg_udaf);
+
+pub fn avg(expr: Expr) -> Expr {
+    Expr::AggregateFunction(AggregateFunction::new_udf(
+        avg_udaf(),
         vec![expr],
         false,
         None,
@@ -274,6 +291,68 @@ impl AggregateUDFImpl for Count {
     }
 }
 
+/// Testing stub implementation of avg aggregate
+#[derive(Debug)]
+pub struct Avg {
+    signature: Signature,
+    aliases: Vec<String>,
+}
+impl Avg {
+    pub fn new() -> Self {
+        Self {
+            aliases: vec![String::from("mean")],
+            signature: Signature::uniform(1, NUMERICS.to_vec(), Immutable),
+        }
+    }
+}
+
+impl Default for Avg {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl AggregateUDFImpl for Avg {
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+
+    fn name(&self) -> &str {
+        "avg"
+    }
+
+    fn signature(&self) -> &Signature {
+        &self.signature
+    }
+
+    fn return_type(&self, arg_types: &[DataType]) -> Result<DataType> {
+        avg_return_type(self.name(), &arg_types[0])
+    }
+
+    fn accumulator(&self, _acc_args: AccumulatorArgs) -> Result<Box<dyn Accumulator>> {
+        not_impl_err!("no impl for stub")
+    }
+
+    fn aliases(&self) -> &[String] {
+        &self.aliases
+    }
+
+    fn create_groups_accumulator(
+        &self,
+        _args: AccumulatorArgs,
+    ) -> Result<Box<dyn GroupsAccumulator>> {
+        not_impl_err!("no impl for stub")
+    }
+
+    fn reverse_expr(&self) -> ReversedUDAF {
+        ReversedUDAF::Identical
+    }
+
+    fn coerce_types(&self, arg_types: &[DataType]) -> Result<Vec<DataType>> {
+        coerce_avg_type(self.name(), arg_types)
+    }
+}
+
 create_func!(Min, min_udaf);
 
 pub fn min(expr: Expr) -> Expr {
@@ -311,7 +390,7 @@ impl Default for Min {
 impl Min {
     pub fn new() -> Self {
         Self {
-            aliases: vec!["count".to_string()],
+            aliases: vec![],
             signature: Signature::variadic_any(Volatility::Immutable),
         }
     }
@@ -395,7 +474,7 @@ impl Default for Max {
 impl Max {
     pub fn new() -> Self {
         Self {
-            aliases: vec!["count".to_string()],
+            aliases: vec![],
             signature: Signature::variadic_any(Volatility::Immutable),
         }
     }
@@ -429,7 +508,6 @@ impl AggregateUDFImpl for Max {
     fn aliases(&self) -> &[String] {
         &self.aliases
     }
-
     fn create_groups_accumulator(
         &self,
         _args: AccumulatorArgs,

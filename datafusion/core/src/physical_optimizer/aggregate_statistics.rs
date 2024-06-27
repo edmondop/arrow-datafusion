@@ -141,7 +141,7 @@ fn take_optimizable_column_and_table_count(
 ) -> Option<(ScalarValue, String)> {
     let col_stats = &stats.column_statistics;
     if let Some(agg_expr) = agg_expr.as_any().downcast_ref::<AggregateFunctionExpr>() {
-        if agg_expr.fun().name() == "COUNT" && !agg_expr.is_distinct() {
+        if agg_expr.fun().name() == "count" && !agg_expr.is_distinct() {
             if let Precision::Exact(num_rows) = stats.num_rows {
                 let exprs = agg_expr.expressions();
                 if exprs.len() == 1 {
@@ -245,7 +245,7 @@ fn take_optimizable_max(
         match *num_rows {
             0 => {
                 // MIN/MAX with 0 rows is always null
-                if let Some(casted_expr) = unwrap_max(agg_expr){
+                if let Some(casted_expr) = unwrap_max(agg_expr) {
                     if let Ok(max_data_type) =
                         ScalarValue::try_from(casted_expr.field().unwrap().data_type())
                     {
@@ -255,7 +255,7 @@ fn take_optimizable_max(
             }
             value if value > 0 => {
                 let col_stats = &stats.column_statistics;
-                if let Some(casted_expr) = unwrap_max(agg_expr){
+                if let Some(casted_expr) = unwrap_max(agg_expr) {
                     if casted_expr.expressions().len() == 1 {
                         // TODO optimize with exprs other than Column
                         if let Some(col_expr) = casted_expr.expressions()[0]

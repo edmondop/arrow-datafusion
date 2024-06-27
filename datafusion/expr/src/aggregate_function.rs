@@ -33,14 +33,10 @@ use strum_macros::EnumIter;
 // https://datafusion.apache.org/contributor-guide/index.html#how-to-add-a-new-aggregate-function
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Hash, EnumIter)]
 pub enum AggregateFunction {
-    /// Average
-    Avg,
     /// Aggregation into an array
     ArrayAgg,
     /// N'th value in a group according to some ordering
     NthValue,
-    /// Correlation
-    Correlation,
     /// Grouping
     Grouping,
 }
@@ -49,10 +45,8 @@ impl AggregateFunction {
     pub fn name(&self) -> &str {
         use AggregateFunction::*;
         match self {
-            Avg => "AVG",
             ArrayAgg => "ARRAY_AGG",
             NthValue => "NTH_VALUE",
-            Correlation => "CORR",
             Grouping => "GROUPING",
         }
     }
@@ -69,12 +63,8 @@ impl FromStr for AggregateFunction {
     fn from_str(name: &str) -> Result<AggregateFunction> {
         Ok(match name {
             // general
-            "avg" => AggregateFunction::Avg,
-            "mean" => AggregateFunction::Avg,
             "array_agg" => AggregateFunction::ArrayAgg,
             "nth_value" => AggregateFunction::NthValue,
-            // statistical
-            "corr" => AggregateFunction::Correlation,
             // other
             "grouping" => AggregateFunction::Grouping,
             _ => {
@@ -88,7 +78,11 @@ impl AggregateFunction {
     /// Returns the datatype of the aggregate function given its argument types
     ///
     /// This is used to get the returned data type for aggregate expr.
-    pub fn return_type(&self, input_expr_types: &[DataType]) -> Result<DataType> {
+    pub fn return_type(
+        &self,
+        input_expr_types: &[DataType],
+        input_expr_nullable: &[bool],
+    ) -> Result<DataType> {
         // Note that this function *must* return the same type that the respective physical expression returns
         // or the execution panics.
 
@@ -107,32 +101,25 @@ impl AggregateFunction {
             })?;
 
         match self {
-            AggregateFunction::Correlation => {
-                correlation_return_type(&coerced_data_types[0])
-            }
-            AggregateFunction::Avg => avg_return_type(&coerced_data_types[0]),
             AggregateFunction::ArrayAgg => Ok(DataType::List(Arc::new(Field::new(
                 "item",
                 coerced_data_types[0].clone(),
-                true,
+                input_expr_nullable[0],
             )))),
             AggregateFunction::Grouping => Ok(DataType::Int32),
             AggregateFunction::NthValue => Ok(coerced_data_types[0].clone()),
         }
     }
-}
 
-/// Returns the internal sum datatype of the avg aggregate function.
-pub fn sum_type_of_avg(input_expr_types: &[DataType]) -> Result<DataType> {
-    // Note that this function *must* return the same type that the respective physical expression returns
-    // or the execution panics.
-    let fun = AggregateFunction::Avg;
-    let coerced_data_types = crate::type_coercion::aggregates::coerce_types(
-        &fun,
-        input_expr_types,
-        &fun.signature(),
-    )?;
-    avg_sum_type(&coerced_data_types[0])
+    /// Returns if the return type of the aggregate function is nullable given its argument
+    /// nullability
+    pub fn nullable(&self) -> Result<bool> {
+        match self {
+            AggregateFunction::ArrayAgg => Ok(false),
+            AggregateFunction::Grouping => Ok(true),
+            AggregateFunction::NthValue => Ok(true),
+        }
+    }
 }
 
 impl AggregateFunction {
@@ -143,13 +130,7 @@ impl AggregateFunction {
             AggregateFunction::Grouping | AggregateFunction::ArrayAgg => {
                 Signature::any(1, Volatility::Immutable)
             }
-            AggregateFunction::Avg => {
-                Signature::uniform(1, NUMERICS.to_vec(), Volatility::Immutable)
-            }
             AggregateFunction::NthValue => Signature::any(2, Volatility::Immutable),
-            AggregateFunction::Correlation => {
-                Signature::uniform(2, NUMERICS.to_vec(), Volatility::Immutable)
-            }
         }
     }
 }

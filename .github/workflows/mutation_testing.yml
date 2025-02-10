@@ -1,7 +1,7 @@
 name: Run Cargo Mutants
 
 on:
-  workflow_dispatch: # Allows manual execution via GitHub UI
+  workflow_dispatch:
 
 jobs:
   mutation-testing:

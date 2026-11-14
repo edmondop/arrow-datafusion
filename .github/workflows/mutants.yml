@@ -71,6 +71,10 @@ jobs:
             --output "$RUNNER_TEMP"
           rc=$?
           [ "$rc" -eq 0 ] || [ "$rc" -eq 2 ] || [ "$rc" -eq 3 ]
+      # The timeout is explicit because cargo-mutants 27.1.0 runs this
+      # baseline against the mutated package, not `--test-package`, and
+      # derives a test timeout far too short for these suites. Mutants then
+      # time out instead of being reported as missed.
       - name: Retest survivors against end-to-end tests
         run: |
           if [ ! -s "$RUNNER_TEMP/mutants.out/missed.txt" ]; then
@@ -78,12 +82,24 @@ jobs:
           fi
           set +e
           cargo mutants --in-diff "$RUNNER_TEMP/pr.diff" \
-            --output "$RUNNER_TEMP" --iterate \
+            --output "$RUNNER_TEMP" --iterate --timeout 1800 \
             --test-package datafusion,datafusion-sqllogictest
           rc=$?
           [ "$rc" -eq 0 ] || [ "$rc" -eq 2 ] || [ "$rc" -eq 3 ]
       - name: Report missed mutants
         run: |
+          timeout="$RUNNER_TEMP/mutants.out/timeout.txt"
+          if [ -s "$timeout" ]; then
+            {
+              echo "## Mutants that made the tests time out"
+              echo
+              echo "These usually mean the mutant caused a hang, which counts as caught."
+              echo
+              echo '```'
+              cat "$timeout"
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
           missed="$RUNNER_TEMP/mutants.out/missed.txt"
           if [ -s "$missed" ]; then
             {

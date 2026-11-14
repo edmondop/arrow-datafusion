@@ -589,3 +589,8 @@ fn apply_subrules(
 }
 
 // See tests in datafusion/core/tests/physical_optimizer
+
+#[allow(dead_code)]
+pub(crate) fn mutants_probe(a: usize, b: usize) -> bool {
+    a > b
+}

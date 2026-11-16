@@ -112,6 +112,8 @@ impl FileRange {
 ///
 /// A null partition value instead gives `null_count = num_rows`, `distinct_count = 0`
 /// and absent `min`/`max`.
+/// Files with exactly zero rows have absent `min`/`max` and zero distinct values
+/// for every partition column.
 ///
 /// This enables query optimizers to use partition column bounds for pruning and planning.
 pub struct PartitionedFile {
@@ -336,6 +338,8 @@ impl PartitionedFile {
     ///
     /// A null partition value (e.g. a Hive default partition) instead gives
     /// `null_count = num_rows`, `distinct_count = 0` and absent `min`/`max`.
+    /// Files with exactly zero rows have absent `min`/`max` and zero distinct values
+    /// for every partition column.
     pub fn with_statistics(mut self, file_statistics: Arc<Statistics>) -> Self {
         if self.partition_values.is_empty() {
             // No partition columns, use stats as-is
@@ -344,15 +348,16 @@ impl PartitionedFile {
             // Extend stats with exact partition column statistics
             let mut stats = Arc::unwrap_or_clone(file_statistics);
             for partition_value in &self.partition_values {
-                let (null_count, min_max, distinct_count) = if partition_value.is_null() {
-                    (stats.num_rows, Precision::Absent, Precision::Exact(0))
-                } else {
-                    (
-                        Precision::Exact(0),
-                        Precision::Exact(partition_value.clone()),
-                        Precision::Exact(1),
-                    )
-                };
+                let (null_count, min_max, distinct_count) =
+                    if partition_value.is_null() || is_known_empty(&stats) {
+                        (stats.num_rows, Precision::Absent, Precision::Exact(0))
+                    } else {
+                        (
+                            Precision::Exact(0),
+                            Precision::Exact(partition_value.clone()),
+                            Precision::Exact(1),
+                        )
+                    };
                 let col_stats = ColumnStatistics {
                     null_count,
                     max_value: min_max.clone(),
@@ -697,6 +702,63 @@ mod tests {
             Precision::Exact(1),
             "Partition column distinct_count should be Exact(1)"
         );
+    }
+
+    #[test]
+    fn test_with_statistics_empty_partition() {
+        use crate::PartitionedFile;
+        use datafusion_common::stats::Precision;
+        use datafusion_common::{ColumnStatistics, ScalarValue, Statistics};
+
+        for partition_value in [ScalarValue::Int32(Some(7)), ScalarValue::Int32(None)] {
+            let mut file = PartitionedFile::new("test.parquet", 100);
+            file.partition_values = vec![partition_value];
+            let file_stats = Arc::new(Statistics {
+                num_rows: Precision::Exact(0),
+                ..Default::default()
+            });
+
+            let stats = file.with_statistics(file_stats).statistics.unwrap();
+            assert_eq!(
+                stats.column_statistics,
+                vec![ColumnStatistics {
+                    null_count: Precision::Exact(0),
+                    min_value: Precision::Absent,
+                    max_value: Precision::Absent,
+                    distinct_count: Precision::Exact(0),
+                    sum_value: Precision::Absent,
+                    byte_size: Precision::Exact(0),
+                }]
+            );
+        }
+    }
+
+    #[test]
+    fn test_with_statistics_partition_not_known_empty() {
+        use crate::PartitionedFile;
+        use datafusion_common::stats::Precision;
+        use datafusion_common::{ScalarValue, Statistics};
+
+        for num_rows in [Precision::Absent, Precision::Inexact(0)] {
+            let mut file = PartitionedFile::new("test.parquet", 100);
+            file.partition_values = vec![ScalarValue::Int32(Some(7))];
+            let file_stats = Arc::new(Statistics {
+                num_rows,
+                ..Default::default()
+            });
+
+            let stats = file.with_statistics(file_stats).statistics.unwrap();
+            let column = &stats.column_statistics[0];
+            assert_eq!(
+                column.min_value,
+                Precision::Exact(ScalarValue::Int32(Some(7)))
+            );
+            assert_eq!(
+                column.max_value,
+                Precision::Exact(ScalarValue::Int32(Some(7)))
+            );
+            assert_eq!(column.distinct_count, Precision::Exact(1));
+        }
     }
 
     #[test]

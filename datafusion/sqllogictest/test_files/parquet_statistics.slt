@@ -412,6 +412,37 @@ DROP TABLE literal_ndv_empty;
 statement ok
 SET datafusion.execution.target_partitions = 4;
 
+# Empty partition files must not contribute their directory values to MIN/MAX.
+statement ok
+COPY (SELECT 1 AS a WHERE false)
+TO 'test_files/scratch/parquet_statistics/empty_partitions/p=0/empty.parquet' STORED AS PARQUET;
+
+statement ok
+COPY (SELECT 1 AS a)
+TO 'test_files/scratch/parquet_statistics/empty_partitions/p=1/data.parquet' STORED AS PARQUET;
+
+statement ok
+COPY (SELECT 1 AS a WHERE false)
+TO 'test_files/scratch/parquet_statistics/empty_partitions/p=7/empty.parquet' STORED AS PARQUET;
+
+statement ok
+CREATE EXTERNAL TABLE empty_partitions (a INT, p INT)
+STORED AS PARQUET PARTITIONED BY (p)
+LOCATION 'test_files/scratch/parquet_statistics/empty_partitions/';
+
+query III
+SELECT count(*), min(p), max(p) FROM empty_partitions;
+----
+1 1 1
+
+query III
+SELECT count(*), min(p), max(p) FROM empty_partitions WHERE p <> 1;
+----
+0 NULL NULL
+
+statement ok
+DROP TABLE empty_partitions;
+
 # Config reset
 statement ok
 RESET datafusion.execution.collect_statistics;
